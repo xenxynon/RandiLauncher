@@ -235,7 +235,6 @@ public class DeviceProfile {
     public final int hotseatQsbHeight;
     public final int hotseatQsbVisualHeight;
     private final int hotseatQsbShadowHeight;
-    private final int hotseatQsbMarginTop;
     public int hotseatBorderSpace;
     private final int mMinHotseatIconSpacePx;
     private final int mMinHotseatQsbWidthPx;
@@ -563,7 +562,6 @@ public class DeviceProfile {
         hotseatQsbHeight = res.getDimensionPixelSize(R.dimen.qsb_widget_height);
         hotseatQsbShadowHeight = res.getDimensionPixelSize(R.dimen.qsb_shadow_height);
         hotseatQsbVisualHeight = hotseatQsbHeight - 2 * hotseatQsbShadowHeight;
-        hotseatQsbMarginTop = res.getDimensionPixelSize(R.dimen.hotseat_qsb_margin_top);
 
         // Whether QSB might be inline in appropriate orientation (e.g. landscape).
         boolean showQsb = Utilities.showQSB(context);
@@ -1496,8 +1494,9 @@ public class DeviceProfile {
                     + allAppsPadding.left + allAppsPadding.right;
             allAppsLeftRightMargin = Math.max(1, (availableWidthPx - usedWidth) / 2);
         } else if (!mIsResponsiveGrid) {
-            int newPadding = 40;
-            allAppsPadding.left = allAppsPadding.right = newPadding;
+            allAppsPadding.left = allAppsPadding.right =
+                    Math.max(0, desiredWorkspaceHorizontalMarginPx + cellLayoutHorizontalPadding
+                            - (allAppsBorderSpacePx.x / 2));
         }
     }
 
@@ -1506,8 +1505,8 @@ public class DeviceProfile {
                 inv.allAppsStyle != INVALID_RESOURCE_HANDLE ? inv.allAppsStyle
                         : R.style.AllAppsStyleDefault, R.styleable.AllAppsStyle);
 
-        int newPadding = 40;
-        allAppsPadding.left = allAppsPadding.right = newPadding;
+        allAppsPadding.left = allAppsPadding.right = allAppsStyle.getDimensionPixelSize(
+                R.styleable.AllAppsStyle_horizontalPadding, 0);
         allAppsStyle.recycle();
     }
 
@@ -1974,7 +1973,7 @@ public class DeviceProfile {
         } else if (isTaskbarPresent) { // QSB on top
             return hotseatBarSizePx - hotseatQsbHeight + hotseatQsbShadowHeight;
         } else {
-            return hotseatBarBottomSpacePx - hotseatQsbShadowHeight - hotseatQsbMarginTop;
+            return hotseatBarBottomSpacePx - hotseatQsbShadowHeight;
         }
     }
 

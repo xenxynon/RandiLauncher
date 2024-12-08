@@ -45,8 +45,8 @@
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.SUSPEND_APPS" />
     <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
     <!-- for rotating surface by arbitrary degree -->
-    <uses-permission android:name="android.permission.ACCESS_SURFACE_FLINGER" />
     <uses-permission android:name="android.permission.ROTATE_SURFACE_FLINGER" />
     <uses-permission android:name="android.permission.WAKEUP_SURFACE_FLINGER" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
@@ -60,9 +60,13 @@
     <uses-permission android:name="android.permission.GET_INTENT_SENDER_INTENT" />
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <uses-permission android:name="android.permission.REGISTER_STATS_PULL_ATOM"/>
+    <uses-permission android:name="com.google.android.apps.search.omnient.permission.LAUNCH_FROM_EXTERNAL_APP"/>
 
     <!-- AppLock -->
     <uses-permission android:name="android.permission.MANAGE_APP_LOCK" />
+
+    <!-- Floating window -->
+    <uses-permission android:name="com.crdroid.permission.START_FREEFORM" />
 
     <!--
     Permissions required for read/write access to the workspace data. These permission name
@@ -151,13 +155,12 @@
 
         <!--
         The content provider for exposing various launcher grid options.
+        TODO: Add proper permissions
         -->
         <provider
             android:name="com.android.launcher3.graphics.GridCustomizationsProvider"
             android:authorities="${applicationId}.grid_control"
-            android:exported="true"
-            android:writePermission="${applicationId}.permission.WRITE_SETTINGS"
-            android:readPermission="${applicationId}.permission.READ_SETTINGS" />
+            android:exported="true" />
 
         <!--
         The settings activity. To extend point settings_fragment_name to appropriate fragment class
@@ -221,6 +224,14 @@
             android:theme="@style/HomeSettings.Theme"
             android:exported="true"
             android:autoRemoveFromRecents="true"  />
+
+        <!-- Themed icons settings -->
+        <activity
+            android:name="com.android.launcher3.icons.pack.ThemeIconsSettingsActivity"
+            android:label="@string/themed_icons_category_title"
+            android:theme="@style/HomeSettings.Theme"
+            android:exported="true"
+            android:autoRemoveFromRecents="true" />
 
         <provider
             android:name="com.android.launcher3.testing.TestInformationProvider"

@@ -28,7 +28,7 @@ import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.android.internal.util.infinity.OmniJawsClient;
+import com.android.internal.util.android.OmniJawsClient;
 
 import com.android.launcher3.R;
 import com.android.launcher3.Utilities;
@@ -60,7 +60,7 @@ public class QuickspaceController implements OmniJawsClient.OmniJawsObserver {
     private String mLastTrackTitle = null;
 
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
-
+    
     private Runnable mOnDataUpdatedRunnable = new Runnable() {
             @Override
             public void run() {
@@ -69,7 +69,7 @@ public class QuickspaceController implements OmniJawsClient.OmniJawsObserver {
                 }
             }
         };
-
+        
     private Runnable mWeatherRunnable = new Runnable() {
             @Override
             public void run() {
@@ -193,13 +193,13 @@ public class QuickspaceController implements OmniJawsClient.OmniJawsObserver {
         updateMediaController();
         notifyListeners();
     }
-
+    
     private void maybeInitExecutor() {
         if (executorService == null || executorService.isShutdown()) {
             executorService = Executors.newSingleThreadExecutor();
         }
     }
-
+    
     private void cancelListeners() {
         if (mEventsController != null) {
             mEventsController.onPause();

@@ -1052,6 +1052,54 @@ public class QuickstepTransitionManager implements OnDeviceProfileChangeListener
     }
 
     /**
+     * Returns animator that controls depth/blur of the background.
+     */
+    private ObjectAnimator getBackgroundAnimator() {
+        // When launching an app from overview that doesn't map to a task, we still want to just
+        // blur the wallpaper instead of the launcher surface as well
+        boolean allowBlurringLauncher = mLauncher.getStateManager().getState() != OVERVIEW
+                && BlurUtils.supportsBlursOnWindows();
+
+        LaunchDepthController depthController = new LaunchDepthController(mLauncher);
+        ObjectAnimator backgroundRadiusAnim = ObjectAnimator.ofFloat(depthController.stateDepth,
+                        MULTI_PROPERTY_VALUE, BACKGROUND_APP.getDepth(mLauncher))
+                        .setDuration(APP_LAUNCH_DURATION);
+
+        if (allowBlurringLauncher) {
+            // Create a temporary effect layer, that lives on top of launcher, so we can apply
+            // the blur to it. The EffectLayer will be fullscreen, which will help with caching
+            // optimizations on the SurfaceFlinger side:
+            // - Results would be able to be cached as a texture
+            // - There won't be texture allocation overhead, because EffectLayers don't have
+            //   buffers
+            ViewRootImpl viewRootImpl = mLauncher.getDragLayer().getViewRootImpl();
+            SurfaceControl parent = viewRootImpl != null
+                    ? viewRootImpl.getSurfaceControl()
+                    : null;
+            SurfaceControl dimLayer = new SurfaceControl.Builder()
+                    .setName("Blur layer")
+                    .setParent(parent)
+                    .setOpaque(false)
+                    .setHidden(false)
+                    .setEffectLayer()
+                    .build();
+
+            backgroundRadiusAnim.addListener(AnimatorListeners.forEndCallback(() ->
+                    new SurfaceControl.Transaction().remove(dimLayer).apply()));
+        }
+
+        backgroundRadiusAnim.addListener(
+                AnimatorListeners.forEndCallback(() -> {
+                    // reset the depth to match the main depth controller's depth
+                    depthController.stateDepth
+                            .setValue(mLauncher.getDepthController().stateDepth.getValue());
+                    depthController.dispose();
+                }));
+
+        return backgroundRadiusAnim;
+    }
+
+    /**
      * Registers remote animations used when closing apps to home screen.
      */
     public void registerRemoteAnimations() {

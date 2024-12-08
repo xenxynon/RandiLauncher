@@ -667,7 +667,8 @@ public final class Utilities {
                 return null;
             }
             mainIcon = appState.getIconProvider().getIcon(
-                    activityInfo, appState.getInvariantDeviceProfile().fillResIconDpi);
+                    activityInfo, appState.getInvariantDeviceProfile().fillResIconDpi, 
+                    Themes.getThemedIconPack(context));
         } else if (info.itemType == LauncherSettings.Favorites.ITEM_TYPE_DEEP_SHORTCUT) {
             List<ShortcutInfo> siList = ShortcutKey.fromItemInfo(info)
                     .buildRequest(context)
@@ -955,8 +956,7 @@ public final class Utilities {
 
     public static boolean isGSAEnabled(Context context) {
         try {
-            return (context.getPackageManager().getApplicationInfo(GSA_PACKAGE, 0).enabled &&
-                context.getPackageManager().getApplicationInfo(GSA_PACKAGE, 0).isProduct());
+            return context.getPackageManager().getApplicationInfo(GSA_PACKAGE, 0).enabled;
         } catch (PackageManager.NameNotFoundException e) {
             return false;
         }
@@ -1059,10 +1059,13 @@ public final class Utilities {
         SharedPreferences prefs = LauncherPrefs.getPrefs(context.getApplicationContext());
         return prefs.getBoolean(KEY_RECENTS_MEMINFO, false);
    }
+   
+    public static int getLauncher() {
+        return android.os.SystemProperties.getInt("persist.sys.default_launcher", 0);
+    }
 
     public static int getRecentsOpacity(Context context) {
-        SharedPreferences prefs = LauncherPrefs.getPrefs(context.getApplicationContext());
-        return prefs.getInt(KEY_RECENTS_OPACITY, 40);
+        return getLauncher() == 2 ? 100 : 0;
     }
 
     public static int getAllAppsOpacity(Context context) {

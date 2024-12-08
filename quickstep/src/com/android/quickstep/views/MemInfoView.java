@@ -224,8 +224,7 @@ public class MemInfoView extends TextView {
             mMemInfoReader.readMemInfo();
             long freeMemory = mMemInfoReader.getFreeSize() + mMemInfoReader.getCachedSize() + getTotalBackgroundMemory();
             String availResult = Formatter.formatShortFileSize(mContext, freeMemory);
-            String totalResult = Formatter.formatShortFileSize(mContext, memInfo.totalMem);
-            String text = String.format(mMemInfoText, availResult, totalResult);
+            String text = String.format(mMemInfoText, availResult, mTotalResult);
             ThreadUtils.postOnMainThread(() -> setText(text));
             if (mHandler != null) {
                 mHandler.postDelayed(this, 1000);

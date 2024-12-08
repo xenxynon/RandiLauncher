@@ -140,8 +140,11 @@ public class AppsDividerView extends View implements FloatingHeaderRow {
                     sectionCount++;
                 }
             }
-            if (sectionCount > 0) {
+
+            if (mShowAllAppsLabel && sectionCount > 0) {
                 dividerType = DividerType.ALL_APPS_LABEL;
+            } else if (sectionCount == 1) {
+                dividerType = DividerType.LINE;
             } else {
                 dividerType = DividerType.NONE;
             }

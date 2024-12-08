@@ -92,7 +92,7 @@ public class SysUiScrim implements View.OnAttachStateChangeListener,
 
     private final View mRoot;
     private final BaseDraggingActivity mActivity;
-    private boolean mHideSysUiScrim;
+    private final boolean mHideSysUiScrim;
     private boolean mSkipScrimAnimationForTest = false;
 
     private boolean mAnimateScrimOnNextDraw = false;
@@ -107,7 +107,8 @@ public class SysUiScrim implements View.OnAttachStateChangeListener,
         mTopMaskHeight = ResourceUtils.pxFromDp(TOP_MASK_HEIGHT_DP, dm);
         mBottomMaskHeight = ResourceUtils.pxFromDp(BOTTOM_MASK_HEIGHT_DP, dm);
         SharedPreferences prefs = LauncherPrefs.getPrefs(view.getContext());
-        mHideSysUiScrim = !prefs.getBoolean(KEY_SHOW_TOP_SHADOW, true);
+        final boolean showScrim = prefs.getBoolean(KEY_SHOW_TOP_SHADOW, true);
+        mHideSysUiScrim = !showScrim;
 
         mTopMaskBitmap = mHideSysUiScrim ? null : createDitheredAlphaMask(mTopMaskHeight,
                 new int[]{0x3DFFFFFF, 0x0AFFFFFF, 0x00FFFFFF},
@@ -170,13 +171,14 @@ public class SysUiScrim implements View.OnAttachStateChangeListener,
     /**
      * Determines whether to draw the top and/or bottom scrim based on new insets.
      *
-     * In order for the bottom scrim to be drawn these 2 conditions should be met:
-     * the taskbar is not present and the Hotseat is horizontal
+     * In order for the bottom scrim to be drawn this 3 condition should be meet at the same time:
+     * the device is in 3 button navigation, the taskbar is not present and the Hotseat is
+     * horizontal
      */
     public void onInsetsChanged(Rect insets) {
         DeviceProfile dp = mActivity.getDeviceProfile();
         mDrawTopScrim = insets.top > 0;
-        mDrawBottomScrim = !dp.isVerticalBarLayout() && !dp.isTaskbarPresent;
+        mDrawBottomScrim = !dp.isVerticalBarLayout() && !dp.isGestureMode && !dp.isTaskbarPresent;
     }
 
     @Override
@@ -192,7 +194,6 @@ public class SysUiScrim implements View.OnAttachStateChangeListener,
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         if (key.equals(KEY_SHOW_TOP_SHADOW)) {
-            mHideSysUiScrim = !prefs.getBoolean(KEY_SHOW_TOP_SHADOW, true);
             mRoot.invalidate();
         }
     }

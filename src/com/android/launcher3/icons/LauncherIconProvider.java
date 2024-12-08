@@ -17,6 +17,8 @@ package com.android.launcher3.icons;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.XmlResourceParser;
 import android.os.Build;
 import android.text.TextUtils;
@@ -30,6 +32,7 @@ import com.android.launcher3.util.Themes;
 import org.xmlpull.v1.XmlPullParser;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -46,10 +49,13 @@ public class LauncherIconProvider extends IconProvider {
 
     private Map<String, ThemeData> mThemedIconMap;
     private boolean mSupportsIconTheme;
+    
+    protected final Context mContext;
 
     public LauncherIconProvider(Context context) {
         super(context);
-        setIconThemeSupported(Themes.isThemedIconEnabled(context));
+        mContext = context;
+        setIconThemeSupported(Themes.isThemedIconEnabled(mContext));
     }
 
     /**
@@ -58,12 +64,12 @@ public class LauncherIconProvider extends IconProvider {
     public void setIconThemeSupported(boolean isSupported) {
         mSupportsIconTheme = isSupported;
         mThemedIconMap = isSupported && FeatureFlags.USE_LOCAL_ICON_OVERRIDES.get()
-                ? getThemedIconMap() : DISABLED_MAP;
+                ? null : DISABLED_MAP;
     }
 
     @Override
-    protected ThemeData getThemeDataForPackage(String packageName) {
-        return mThemedIconMap.get(packageName);
+    protected ThemeData getThemeDataForPackage(String packageName, String themedIconPack) {
+        return getThemedIconMap(themedIconPack).get(packageName);
     }
 
     @Override
@@ -72,10 +78,19 @@ public class LauncherIconProvider extends IconProvider {
                 + "," + Build.VERSION.INCREMENTAL;
     }
 
-    private Map<String, ThemeData> getThemedIconMap() {
-        ArrayMap<String, ThemeData> map = new ArrayMap<>();
+    private Map<String, ThemeData> getThemedIconMap(String themedIconPack) {
+        HashMap<String, ThemeData> map = new HashMap<>();
         Resources res = mContext.getResources();
-        try (XmlResourceParser parser = res.getXml(R.xml.grayscale_icon_map)) {
+        boolean themedIconPackAvailable = false;
+        if (themedIconPack != null) {
+             try {
+                res = mContext.getPackageManager().getResourcesForApplication(themedIconPack);
+                themedIconPackAvailable = true;
+             } catch(Exception e) {}
+        }
+        int resID = res.getIdentifier("grayscale_icon_map", "xml",
+                themedIconPackAvailable ? themedIconPack : mContext.getPackageName());
+        try (XmlResourceParser parser = res.getXml(resID)) {
             final int depth = parser.getDepth();
             int type;
             while ((type = parser.next()) != XmlPullParser.START_TAG

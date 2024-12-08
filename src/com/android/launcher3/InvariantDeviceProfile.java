@@ -55,6 +55,7 @@ import com.android.launcher3.config.FeatureFlags;
 import com.android.launcher3.customization.IconDatabase;
 import com.android.launcher3.icons.DotRenderer;
 import com.android.launcher3.logging.FileLog;
+import com.android.launcher3.LauncherAppState;
 import com.android.launcher3.model.DeviceGridState;
 import com.android.launcher3.provider.RestoreDbTask;
 import com.android.launcher3.testing.shared.ResourceUtils;
@@ -66,6 +67,7 @@ import com.android.launcher3.util.Partner;
 import com.android.launcher3.util.SafeCloseable;
 import com.android.launcher3.util.WindowBounds;
 import com.android.launcher3.util.window.WindowManagerProxy;
+import com.android.launcher3.Utilities;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -363,6 +365,10 @@ public class InvariantDeviceProfile implements SafeCloseable, OnSharedPreference
             case DeviceProfile.KEY_ROW_HEIGHT:
             case IconDatabase.KEY_ICON_PACK:
                 onConfigChanged(mContext);
+                break;
+            case IconDatabase.KEY_THEMED_ICON_PACK:
+            case Utilities.KEY_FORCE_MONOCHROME_ICON:
+                LauncherAppState.INSTANCE.executeIfCreated(app -> app.setNeedsRestart());
                 break;
         }
     }
@@ -1254,20 +1260,23 @@ public class InvariantDeviceProfile implements SafeCloseable, OnSharedPreference
                     allAppsBorderSpaceTwoPanelLandscape);
             allAppsBorderSpaces[INDEX_TWO_PANEL_LANDSCAPE] = new PointF(x, y);
 
-            iconSizes[INDEX_DEFAULT] =
-                    a.getFloat(R.styleable.ProfileDisplayOption_iconImageSize, 0) * iconSizeModifier;
-            iconSizes[INDEX_LANDSCAPE] =
-                    a.getFloat(R.styleable.ProfileDisplayOption_iconSizeLandscape,
-                            iconSizes[INDEX_DEFAULT]);
-            iconSizes[INDEX_TWO_PANEL_PORTRAIT] =
-                    a.getFloat(R.styleable.ProfileDisplayOption_iconSizeTwoPanelPortrait,
-                            iconSizes[INDEX_DEFAULT]);
-            iconSizes[INDEX_TWO_PANEL_LANDSCAPE] =
-                    a.getFloat(R.styleable.ProfileDisplayOption_iconSizeTwoPanelLandscape,
-                            iconSizes[INDEX_DEFAULT]);
+            float baseIconSize = a.getFloat(R.styleable.ProfileDisplayOption_iconImageSize, 0);
 
-            allAppsIconSizes[INDEX_DEFAULT] = a.getFloat(
-                    R.styleable.ProfileDisplayOption_allAppsIconSize, iconSizes[INDEX_DEFAULT]);
+            iconSizes[INDEX_DEFAULT] = baseIconSize * iconSizeModifier;
+            iconSizes[INDEX_LANDSCAPE] = a.getFloat(
+                    R.styleable.ProfileDisplayOption_iconSizeLandscape,
+                    iconSizes[INDEX_DEFAULT]);
+            iconSizes[INDEX_TWO_PANEL_PORTRAIT] = a.getFloat(
+                    R.styleable.ProfileDisplayOption_iconSizeTwoPanelPortrait,
+                    iconSizes[INDEX_DEFAULT]);
+            iconSizes[INDEX_TWO_PANEL_LANDSCAPE] = a.getFloat(
+                    R.styleable.ProfileDisplayOption_iconSizeTwoPanelLandscape,
+                    iconSizes[INDEX_DEFAULT]);
+
+            float baseAllAppsIconSize = a.getFloat(R.styleable.ProfileDisplayOption_allAppsIconSize, 0);
+
+            allAppsIconSizes[INDEX_DEFAULT] = baseAllAppsIconSize == 0 ? 
+                iconSizes[INDEX_DEFAULT] : baseAllAppsIconSize * iconSizeModifier;
             allAppsIconSizes[INDEX_LANDSCAPE] = a.getFloat(
                     R.styleable.ProfileDisplayOption_allAppsIconSizeLandscape,
                     allAppsIconSizes[INDEX_DEFAULT]);
