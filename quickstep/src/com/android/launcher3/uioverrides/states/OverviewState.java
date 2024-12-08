@@ -127,14 +127,14 @@ public class OverviewState extends LauncherState {
         if (showFloatingSearch) {
             elements |= FLOATING_SEARCH_BAR;
         }
+        if (!clearAll) {
+            elements |= CLEAR_ALL_BUTTON;
+        }
         if (enableSplitContextual() && launcher.isSplitSelectionActive()) {
             elements &= ~CLEAR_ALL_BUTTON;
         }
         if (memInfo) {
             elements |= MEMINFO;
-        }
-        if (!clearAll) {
-            elements |= CLEAR_ALL_BUTTON;
         }
         return elements;
     }

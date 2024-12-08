@@ -44,6 +44,7 @@ import com.android.launcher3.util.MultiPropertyFactory.MultiProperty;
 import com.android.launcher3.util.MultiValueAlpha;
 import com.android.launcher3.util.NavigationMode;
 import com.android.launcher3.util.ShakeUtils;
+import com.android.launcher3.util.VibratorWrapper;
 import com.android.quickstep.TaskOverlayFactory.OverlayUICallbacks;
 import com.android.quickstep.util.LayoutUtils;
 
@@ -108,9 +109,9 @@ public class OverviewActionsView<T extends OverlayUICallbacks> extends FrameLayo
     private static final String KEY_RECENTS_SCREENSHOT = "pref_recents_screenshot";
     private static final String KEY_RECENTS_CLEAR_ALL = "pref_recents_clear_all";
     private static final String KEY_RECENTS_LENS = "pref_recents_lens";
+    private static final String KEY_RECENTS_SHAKE_CLEAR_ALL = "pref_recents_shake_clear_all";
     private static final String KEY_RECENTS_LOCK = "pref_recents_lock";
     private static final String KEY_RECENTS_KILL_APP = "pref_recents_kill_app";
-    private static final String KEY_RECENTS_SHAKE_CLEAR_ALL = "pref_recents_shake_clear_all";
 
     private MultiValueAlpha mMultiValueAlpha;
     private Button mSplitButton;
@@ -138,11 +139,11 @@ public class OverviewActionsView<T extends OverlayUICallbacks> extends FrameLayo
     private boolean mScreenshot;
     private boolean mClearAll;
     private boolean mLens;
+    private boolean mShakeClearAll;
     private boolean mLock;
     private boolean mKillApp;
-    private boolean mShakeClearAll;
 
-    private final Launcher mLauncher;
+    private Launcher mLauncher;
 
     public OverviewActionsView(Context context) {
         this(context, null);
@@ -163,7 +164,11 @@ public class OverviewActionsView<T extends OverlayUICallbacks> extends FrameLayo
         prefs.registerOnSharedPreferenceChangeListener(this);
         mShakeUtils = new ShakeUtils(context);
         mShakeClearAll = prefs.getBoolean(KEY_RECENTS_SHAKE_CLEAR_ALL, true);
-        mLauncher = isHomeApp(context) ? Launcher.getLauncher(context) : null;
+        try {
+            mLauncher = isHomeApp(context) ? Launcher.getLauncher(context) : null;
+        } catch (Exception e) {
+            mLauncher = null;
+        }
     }
 
     @Override
@@ -218,6 +223,7 @@ public class OverviewActionsView<T extends OverlayUICallbacks> extends FrameLayo
     public void onShake(double speed) {
         if (mCallbacks != null && mShakeClearAll && mLauncher != null &&
                 mLauncher.getOverviewPanel().getVisibility() == View.VISIBLE) {
+            VibratorWrapper.INSTANCE.get(getContext()).vibrate(VibratorWrapper.EFFECT_CLICK);
             mCallbacks.onClearAllTasksRequested();
         }
     }
@@ -238,12 +244,16 @@ public class OverviewActionsView<T extends OverlayUICallbacks> extends FrameLayo
         }
         final int id = view.getId();
         if (id == R.id.action_screenshot) {
+            VibratorWrapper.INSTANCE.get(getContext()).vibrate(VibratorWrapper.EFFECT_CLICK);
             mCallbacks.onScreenshot();
         } else if (id == R.id.action_split) {
+            VibratorWrapper.INSTANCE.get(getContext()).vibrate(VibratorWrapper.EFFECT_CLICK);
             mCallbacks.onSplit();
         } else if (id == R.id.action_clear_all) {
+            VibratorWrapper.INSTANCE.get(getContext()).vibrate(VibratorWrapper.EFFECT_CLICK);
             mCallbacks.onClearAllTasksRequested();
         } else if (id == R.id.action_lens) {
+            VibratorWrapper.INSTANCE.get(getContext()).vibrate(VibratorWrapper.EFFECT_CLICK);
             mCallbacks.onLens();
         } else if (id == R.id.kill_app) {
             mCallbacks.onKillApp();
@@ -271,12 +281,12 @@ public class OverviewActionsView<T extends OverlayUICallbacks> extends FrameLayo
             mClearAll = prefs.getBoolean(KEY_RECENTS_CLEAR_ALL, true);
         } else if (key.equals(KEY_RECENTS_LENS)) {
             mLens = prefs.getBoolean(KEY_RECENTS_LENS, false);
+        } else if (key.equals(KEY_RECENTS_SHAKE_CLEAR_ALL)) {
+            mShakeClearAll = prefs.getBoolean(KEY_RECENTS_SHAKE_CLEAR_ALL, true);
         } else if (key.equals(KEY_RECENTS_LOCK)) {
             mLock = prefs.getBoolean(KEY_RECENTS_LOCK, false);
         } else if (key.equals(KEY_RECENTS_KILL_APP)) {
             mKillApp = prefs.getBoolean(KEY_RECENTS_KILL_APP, false);
-        } else if (key.equals(KEY_RECENTS_SHAKE_CLEAR_ALL)) {
-            mShakeClearAll = prefs.getBoolean(KEY_RECENTS_SHAKE_CLEAR_ALL, false);
         }
         updateVisibilities();
     }

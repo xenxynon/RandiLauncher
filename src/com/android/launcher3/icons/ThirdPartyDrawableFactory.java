@@ -5,7 +5,6 @@ import android.graphics.drawable.Drawable;
 
 import com.android.launcher3.icons.FastBitmapDrawable;
 import com.android.launcher3.model.data.ItemInfoWithIcon;
-import com.android.launcher3.Utilities;
 import com.android.launcher3.graphics.DrawableFactory;
 import com.android.launcher3.util.ComponentKey;
 
@@ -26,13 +25,8 @@ public class ThirdPartyDrawableFactory extends DrawableFactory {
 
     public ThirdPartyDrawableFactory(Context context) {
         mManager = IconPackManager.get(context);
-        if (Utilities.ATLEAST_OREO) {
-            mDynamicClockDrawer = new DynamicClock(context);
-            mCustomClockDrawer = new CustomClock(context);
-        } else {
-            mDynamicClockDrawer = null;
-            mCustomClockDrawer = null;
-        }
+        mDynamicClockDrawer = new DynamicClock(context);
+        mCustomClockDrawer = new CustomClock(context);
         mCalendars = new DateChangeReceiver(context);
     }
 
@@ -46,20 +40,18 @@ public class ThirdPartyDrawableFactory extends DrawableFactory {
             mCalendars.setIsDynamic(key, (resolver != null && resolver.isCalendar())
                 || info.getTargetComponent().getPackageName().equals(DynamicCalendar.CALENDAR));
 
-            if (Utilities.ATLEAST_OREO) {
-                if (resolver != null) {
-                    if (resolver.isClock()) {
-                        Drawable drawable = resolver.getIcon(0, () -> null);
-                        if (drawable != null) {
-                            FastBitmapDrawable fb = mCustomClockDrawer.drawIcon(
-                                    info, drawable, resolver.clockData());
-                            fb.setIsDisabled(info.isDisabled());
-                            return fb;
-                        }
+            if (resolver != null) {
+                if (resolver.isClock()) {
+                    Drawable drawable = resolver.getIcon(0, () -> null);
+                    if (drawable != null) {
+                        FastBitmapDrawable fb = mCustomClockDrawer.drawIcon(
+                                info, drawable, resolver.clockData());
+                        fb.setIsDisabled(info.isDisabled());
+                        return fb;
                     }
-                } else if (info.getTargetComponent().equals(DynamicClock.DESK_CLOCK)) {
-                    return mDynamicClockDrawer.drawIcon(info);
                 }
+            } else if (info.getTargetComponent().equals(DynamicClock.DESK_CLOCK)) {
+                return mDynamicClockDrawer.drawIcon(info);
             }
         }
 

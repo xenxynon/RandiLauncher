@@ -1,9 +1,5 @@
 package com.android.launcher3.qsb;
 
-import static android.view.View.MeasureSpec.EXACTLY;
-import static com.android.launcher3.icons.IconNormalizer.ICON_VISIBLE_AREA_FACTOR;
-import static android.view.View.MeasureSpec.makeMeasureSpec;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -60,9 +56,12 @@ public class QsbLayout extends FrameLayout {
         clipIconRipples();
 
         boolean isThemed = Utilities.isThemedIconsEnabled(mContext);
-        boolean isMusicSearchEnabled = Utilities.isMusicSearchEnabled(mContext);
 
-        micIcon.setImageResource(isThemed ? (isMusicSearchEnabled ? R.drawable.ic_music_themed : R.drawable.ic_mic_themed) : (isMusicSearchEnabled ? R.drawable.ic_music_color : R.drawable.ic_mic_color));
+        if (Utilities.isMusicSearchEnabled(mContext)) {
+            micIcon.setImageResource(isThemed ? R.drawable.ic_music_themed : R.drawable.ic_music_color);
+        } else {
+            micIcon.setImageResource(isThemed ? R.drawable.ic_mic_themed : R.drawable.ic_mic_color);
+        }
         gIcon.setImageResource(isThemed ? R.drawable.ic_super_g_themed : R.drawable.ic_super_g_color);
         lensIcon.setImageResource(isThemed ? R.drawable.ic_lens_themed : R.drawable.ic_lens_color);
 
@@ -112,13 +111,20 @@ public class QsbLayout extends FrameLayout {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int requestedWidth = MeasureSpec.getSize(widthMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec);
 
         DeviceProfile dp = ActivityContext.lookupContext(mContext).getDeviceProfile();
         int cellWidth = DeviceProfile.calculateCellWidth(requestedWidth, dp.cellLayoutBorderSpacePx.x, dp.numShownHotseatIcons);
-        int iconSize = Math.round(ICON_VISIBLE_AREA_FACTOR * dp.iconSizePx);
+        int iconSize = (int)(Math.round((dp.iconSizePx * 0.92f)));
         int width = requestedWidth;
+        setMeasuredDimension(width, height);
 
-        super.onMeasure(makeMeasureSpec(width, EXACTLY), heightMeasureSpec);
+        for (int i = 0; i < getChildCount(); i++) {
+            final View child = getChildAt(i);
+            if (child != null) {
+                measureChildWithMargins(child, widthMeasureSpec, 0, heightMeasureSpec, 0);
+            }
+        }
     }
 
     private void setUpMainSearch() {

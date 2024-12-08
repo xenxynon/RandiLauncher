@@ -38,7 +38,7 @@ import static com.android.launcher3.util.Executors.THREAD_POOL_EXECUTOR;
 public class InfoBottomSheet extends WidgetsBottomSheet {
     private final FragmentManager mFragmentManager;
     protected static Rect mSourceBounds;
-    protected static Context mTarget;
+    protected static Context mViewContext;
 
     public InfoBottomSheet(Context context) {
         this(context, null);
@@ -53,9 +53,9 @@ public class InfoBottomSheet extends WidgetsBottomSheet {
         mFragmentManager = Launcher.getLauncher(context).getFragmentManager();
     }
 
-    public void configureBottomSheet(Rect sourceBounds, Context target) {
+    public void configureBottomSheet(Rect sourceBounds, Context context) {
         mSourceBounds = sourceBounds;
-        mTarget = target;
+        mViewContext = context;
     }
 
     @Override
@@ -200,7 +200,7 @@ public class InfoBottomSheet extends WidgetsBottomSheet {
         }
 
         private void onMoreClick() {
-            new PackageManagerHelper(InfoBottomSheet.mTarget).startDetailsActivityForInfo(
+            new PackageManagerHelper(InfoBottomSheet.mViewContext).startDetailsActivityForInfo(
                         mItemInfo, InfoBottomSheet.mSourceBounds, ActivityOptions.makeBasic().toBundle());
         }
 

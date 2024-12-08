@@ -1781,7 +1781,7 @@ public class Launcher extends StatefulActivity<LauncherState>
         // changes while launcher is still loading.
         getRootView().getViewTreeObserver().removeOnPreDrawListener(mOnInitialBindListener);
         mOverlayManager.onActivityDestroyed();
-
+        
         if (mQuickSpace != null) {
             mQuickSpace.onDestroy();
         }
@@ -2829,9 +2829,7 @@ public class Launcher extends StatefulActivity<LauncherState>
      * @param progress Transition progress from 0 to 1; where 0 => home and 1 => all apps.
      */
     public void onAllAppsTransition(float progress) {
-        if (progress == 0 && mAppsView != null) {
-            hideKeyboard();
-        }
+        // No-Op
     }
 
     /**

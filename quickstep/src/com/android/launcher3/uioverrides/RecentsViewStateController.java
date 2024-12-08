@@ -17,8 +17,8 @@ package com.android.launcher3.uioverrides;
 
 import static com.android.app.animation.Interpolators.LINEAR;
 import static com.android.launcher3.LauncherState.CLEAR_ALL_BUTTON;
-import static com.android.launcher3.LauncherState.OVERVIEW;
 import static com.android.launcher3.LauncherState.MEMINFO;
+import static com.android.launcher3.LauncherState.OVERVIEW;
 import static com.android.launcher3.LauncherState.OVERVIEW_ACTIONS;
 import static com.android.launcher3.LauncherState.OVERVIEW_SPLIT_SELECT;
 import static com.android.launcher3.states.StateAnimationConfig.ANIM_OVERVIEW_ACTIONS_FADE;

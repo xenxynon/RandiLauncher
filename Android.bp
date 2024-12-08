@@ -183,6 +183,7 @@ android_library {
         "SettingsLib",
         "view_capture",
         "animationlib",
+        "org.lineageos.platform",
     ],
     manifest: "AndroidManifest-common.xml",
     sdk_version: "current",
@@ -319,7 +320,7 @@ android_library {
         "androidx.room_room-runtime",
     ],
     plugins: ["androidx.room_room-compiler-plugin"],
-    manifest: "go/AndroidManifest-launcher.xml",
+    manifest: "quickstep/AndroidManifest.xml",
     additional_manifests: [
         "go/AndroidManifest.xml",
         "AndroidManifest-common.xml",

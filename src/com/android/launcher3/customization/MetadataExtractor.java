@@ -49,7 +49,7 @@ class MetadataExtractor {
             PackageInfo pi = mPm.getPackageInfo(pkg, GET_META_DATA);
             mLastUpdate = new File(pi.applicationInfo.sourceDir).lastModified();
             mVersionName = pi.versionName;
-            mVersionCode = Utilities.ATLEAST_P ? pi.getLongVersionCode() : pi.versionCode;
+            mVersionCode = pi.getLongVersionCode();
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
@@ -57,7 +57,7 @@ class MetadataExtractor {
 
     CharSequence getSource() {
         if (TextUtils.isEmpty(mSourcePkg)) {
-            return mContext.getString(R.string.app_info_source_unknown);
+            return mContext.getString(R.string.app_info_source_system);
         }
         try {
             ApplicationInfo pi = mPm.getApplicationInfo(mSourcePkg, 0);

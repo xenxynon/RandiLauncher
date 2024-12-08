@@ -73,9 +73,9 @@ public class PreviewItemManager {
 
     private final Context mContext;
     private final FolderIcon mIcon;
+    private final DrawableFactory mDrawableFactory;
     @VisibleForTesting
     public final int mIconSize;
-    private final DrawableFactory mDrawableFactory;
 
     // These variables are all associated with the drawing of the preview; they are stored
     // as member variables for shared usage and to avoid computation on each frame

@@ -71,7 +71,7 @@ import java.util.stream.Collectors;
 public class GridSizeMigrationUtil {
 
     private static final String TAG = "GridSizeMigrationUtil";
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     private GridSizeMigrationUtil() {
         // Util class should not be instantiated

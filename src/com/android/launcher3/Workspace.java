@@ -612,8 +612,7 @@ public class Workspace<T extends View & PageIndicator> extends PagedView<T>
         }
 
         int cellHSpan = mLauncher.getDeviceProfile().inv.numSearchContainerColumns;
-        int cellYSpan = mLauncher.getDeviceProfile().inv.numRows <= 5 ? 1 : 2; // let's add an extra span for grids with more than 5 rows, so smartspace has enough place to be drawn
-        CellLayoutLayoutParams lp = new CellLayoutLayoutParams(0, 0, cellHSpan, cellYSpan);
+        CellLayoutLayoutParams lp = new CellLayoutLayoutParams(0, 0, cellHSpan, 1);
         lp.canReorder = false;
         if (!firstPage.addViewToCellLayout(
                 mFirstPagePinnedItem, 0, R.id.reserved_container_workspace, lp, true)) {
@@ -3454,12 +3453,8 @@ public class Workspace<T extends View & PageIndicator> extends PagedView<T>
      */
     public void moveToDefaultScreen() {
         int page = DEFAULT_PAGE;
-        if (!workspaceInModalState()) {
-            if (getNextPage() != page) {
-                snapToPage(page);
-            } else {
-                mLauncher.getStateManager().goToState(ALL_APPS);
-            }
+        if (!workspaceInModalState() && getNextPage() != page) {
+            snapToPage(page);
         }
         View child = getChildAt(page);
         if (child != null) {

@@ -18,10 +18,9 @@ package com.android.quickstep.inputconsumers;
 
 import static android.os.VibrationEffect.createPredefined;
 
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningTaskInfo;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.provider.Settings;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
@@ -39,7 +38,7 @@ import com.android.systemui.shared.system.ActivityManagerWrapper;
 import java.util.List;
 
 import com.android.internal.util.android.VibrationUtils;
-import com.android.internal.util.infinity.InfinityUtils;
+import com.android.internal.util.crdroid.Utils;
 
 /**
  * Class for extending nav handle long press behavior
@@ -72,13 +71,13 @@ public class NavHandleLongPressHandler implements ResourceBasedOverride {
      * @param navHandle to handle this long press
      */
     public @Nullable Runnable getLongPressRunnable(NavHandle navHandle) {
-        if (!InfinityUtils.isPackageInstalled(mContext, VELVET_PKG)) {
+        if (!isLongPressSearchEnabled()) {
             return null;
         }
         updateThumbnail();
-        VibrationUtils.triggerVibration(mContext, 2);
         if (mThumbnailData != null && mThumbnailData.thumbnail != null) {
             if (DEBUG) Log.d(TAG, "getLongPressRunnable: Google lens should start now");
+            VibrationUtils.triggerVibration(mContext, 2);
             ImageActionUtils.startLensActivity(mContext, mThumbnailData.thumbnail, null, TAG);
         } else {
             if (DEBUG) Log.d(TAG, "getLongPressRunnable: thumbnail is null");
@@ -94,24 +93,23 @@ public class NavHandleLongPressHandler implements ResourceBasedOverride {
     public void onTouchStarted(NavHandle navHandle) {
         updateThumbnail();
     }
+    
+    private boolean isLongPressSearchEnabled() {
+        boolean searchEnabled = Settings.Secure.getInt(
+            mContext.getContentResolver(), "search_press_hold_nav_handle_enabled", 1) == 1;
+        boolean velvelInstalled = Utils.isPackageInstalled(mContext, VELVET_PKG);
+        return searchEnabled && velvelInstalled;
+    }
 
     private void updateThumbnail() {
-        if (!InfinityUtils.isPackageInstalled(mContext, VELVET_PKG)) {
+        if (!isLongPressSearchEnabled()) {
             return;
         }
         String runningPackage = mTopTaskTracker.getCachedTopTask(
                 /* filterOnlyVisibleRecents */ true).getPackageName();
-        ActivityManager activityManager = (ActivityManager) mContext.getSystemService(Context.ACTIVITY_SERVICE);
-        if (activityManager != null) {
-            List<RunningTaskInfo> tasks = activityManager.getRunningTasks(Integer.MAX_VALUE);
-            for (RunningTaskInfo task : tasks) {
-                if (task.topActivity.getPackageName().equals(runningPackage)) {
-                    int taskId = task.id;
-                    mThumbnailData = ActivityManagerWrapper.getInstance().takeTaskThumbnail(taskId);
-                    break;
-                }
-            }
-        }
+        int taskId = mTopTaskTracker.getCachedTopTask(
+                /* filterOnlyVisibleRecents */ true).getTaskId();
+        mThumbnailData = ActivityManagerWrapper.getInstance().takeTaskThumbnail(taskId);
         if (DEBUG) Log.d(TAG, "updateThumbnail running, runningPackage: " + runningPackage);
     }
 
@@ -122,5 +120,7 @@ public class NavHandleLongPressHandler implements ResourceBasedOverride {
      * @param navHandle to handle the animation for this touch
      * @param reason why the touch ended
      */
-    public void onTouchFinished(NavHandle navHandle, String reason) {}
+    public void onTouchFinished(NavHandle navHandle, String reason) {
+        mThumbnailData = null;
+    }
 }

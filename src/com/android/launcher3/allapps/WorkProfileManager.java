@@ -28,6 +28,7 @@ import static com.android.launcher3.model.BgDataModel.Callbacks.FLAG_HAS_SHORTCU
 import static com.android.launcher3.model.BgDataModel.Callbacks.FLAG_QUIET_MODE_CHANGE_PERMISSION;
 import static com.android.launcher3.model.BgDataModel.Callbacks.FLAG_QUIET_MODE_ENABLED;
 import static com.android.launcher3.model.BgDataModel.Callbacks.FLAG_WORK_PROFILE_QUIET_MODE_ENABLED;
+import static com.android.launcher3.util.Executors.UI_HELPER_EXECUTOR;
 
 import android.os.UserHandle;
 import android.os.UserManager;
@@ -63,12 +64,17 @@ public class WorkProfileManager extends UserProfileManager
     private WorkModeSwitch mWorkModeSwitch;
     private final Predicate<UserHandle> mWorkProfileMatcher;
 
+    private final UserManager mUserManager;
+    private final UserCache mUserCache;
+
     private boolean mHasMultipleProfiles;
 
     public WorkProfileManager(
             UserManager userManager, ActivityAllAppsContainerView allApps,
             StatsLogManager statsLogManager, UserCache userCache) {
         super(userManager, statsLogManager, userCache);
+        mUserManager = userManager;
+        mUserCache = userCache;
         mAllApps = allApps;
         mWorkProfileMatcher = (user) -> userCache.getUserInfo(user).isWork();
     }
@@ -211,16 +217,14 @@ public class WorkProfileManager extends UserProfileManager
     }
 
     private void onWorkFabClickedTurnOff(View view) {
-        if (Utilities.ATLEAST_P && getCurrentState() == STATE_ENABLED
-                && mWorkModeSwitch.isEnabled()) {
+        if (getCurrentState() == STATE_ENABLED && mWorkModeSwitch.isEnabled()) {
             logEvents(LAUNCHER_TURN_OFF_WORK_APPS_TAP);
             setWorkProfileEnabled(false);
         }
     }
 
     private void onWorkFabClickedTurnOn(View view) {
-        if (Utilities.ATLEAST_P && getCurrentState() == STATE_DISABLED
-                && mWorkModeSwitch.isEnabled()) {
+        if (getCurrentState() == STATE_DISABLED && mWorkModeSwitch.isEnabled()) {
             logEvents(LAUNCHER_TURN_ON_WORK_APPS_TAP);
             setWorkProfileEnabled(true);
         }
@@ -256,5 +260,16 @@ public class WorkProfileManager extends UserProfileManager
     @Override
     public Predicate<UserHandle> getUserMatcher() {
         return mWorkProfileMatcher;
+    }
+
+    @Override
+    public void setQuietMode(boolean enabled) {
+        UI_HELPER_EXECUTOR.post(() -> {
+            mUserCache.getUserProfiles()
+                    .stream()
+                    .filter(getUserMatcher())
+                    .forEach(userHandle ->
+                            mUserManager.requestQuietModeEnabled(enabled, userHandle));
+        });
     }
 }

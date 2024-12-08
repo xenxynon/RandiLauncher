@@ -136,12 +136,6 @@ public final class Utilities {
     public static final String[] EMPTY_STRING_ARRAY = new String[0];
     public static final Person[] EMPTY_PERSON_ARRAY = new Person[0];
 
-    @ChecksSdkIntAtLeast(api = VERSION_CODES.O)
-    public static final boolean ATLEAST_OREO = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
-
-    @ChecksSdkIntAtLeast(api = VERSION_CODES.P)
-    public static final boolean ATLEAST_P = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P;
-
     @ChecksSdkIntAtLeast(api = VERSION_CODES.S)
     public static final boolean ATLEAST_S = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
 
@@ -642,7 +636,9 @@ public final class Utilities {
 
         Drawable badge = null;
         if ((info instanceof ItemInfoWithIcon iiwi) && !iiwi.usingLowResIcon()) {
-            badge = iiwi.bitmap.getBadgeDrawable(context, useTheme);
+            try (LauncherIcons li = LauncherIcons.obtain(context)) {
+                badge = iiwi.bitmap.withUser(iiwi.user, li).getBadgeDrawable(context, useTheme);
+            }
         }
 
         if (info instanceof PendingAddShortcutInfo) {
@@ -656,7 +652,8 @@ public final class Utilities {
                 return null;
             }
             mainIcon = appState.getIconProvider().getIcon(
-                    activityInfo, appState.getInvariantDeviceProfile().fillResIconDpi);
+                    activityInfo, appState.getInvariantDeviceProfile().fillResIconDpi, 
+                    Themes.getThemedIconPack(context));
         } else if (info.itemType == LauncherSettings.Favorites.ITEM_TYPE_DEEP_SHORTCUT) {
             List<ShortcutInfo> siList = ShortcutKey.fromItemInfo(info)
                     .buildRequest(context)
@@ -725,11 +722,13 @@ public final class Utilities {
         }
 
         if (badge == null) {
-            badge = BitmapInfo.LOW_RES_INFO.withFlags(
-                            UserCache.INSTANCE.get(context)
-                                    .getUserInfo(info.user)
-                                    .applyBitmapInfoFlags(FlagOp.NO_OP))
-                    .getBadgeDrawable(context, useTheme);
+            try (LauncherIcons li = LauncherIcons.obtain(context)) {
+                badge = BitmapInfo.LOW_RES_INFO.withUser(info.user, li).withFlags(
+                                UserCache.INSTANCE.get(context)
+                                        .getUserInfo(info.user)
+                                        .applyBitmapInfoFlags(FlagOp.NO_OP))
+                        .getBadgeDrawable(context, useTheme);
+            }
             if (badge == null) {
                 badge = new ColorDrawable(Color.TRANSPARENT);
             }
@@ -1016,7 +1015,7 @@ public final class Utilities {
 
     public static boolean canZoomWallpaper(Context context) {
         SharedPreferences prefs = LauncherPrefs.getPrefs(context.getApplicationContext());
-        return prefs.getBoolean(KEY_ALLOW_WALLPAPER_ZOOMING, false);
+        return prefs.getBoolean(KEY_ALLOW_WALLPAPER_ZOOMING, true);
     }
 
     public static boolean showStatusbarEnabled(Context context) {
@@ -1046,8 +1045,7 @@ public final class Utilities {
 
     public static int getBlurRadius(Context context) {
         SharedPreferences prefs = LauncherPrefs.getPrefs(context.getApplicationContext());
-        return prefs.getInt(KEY_BLUR_DEPTH,
-                    context.getResources().getInteger(R.integer.max_depth_blur_radius));
+        return prefs.getInt(KEY_BLUR_DEPTH, 75);
     }
 
     public static boolean isShortParallax(Context context) {
@@ -1101,9 +1099,9 @@ public final class Utilities {
     }
 
     public static boolean enableMonoChromeThemedIcons(Context context) {
-    	SharedPreferences prefs = LauncherPrefs.getPrefs(context.getApplicationContext());
-    	return prefs.getBoolean(KEY_FORCE_MONOCHROME_ICONS, false);
-   }
+        SharedPreferences prefs = LauncherPrefs.getPrefs(context.getApplicationContext());
+        return prefs.getBoolean(KEY_FORCE_MONOCHROME_ICONS, false);
+    }
 
     public static boolean showScrollbar(Context context) {
         SharedPreferences prefs = LauncherPrefs.getPrefs(context.getApplicationContext());

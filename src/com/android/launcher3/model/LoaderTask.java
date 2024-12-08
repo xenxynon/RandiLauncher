@@ -121,7 +121,7 @@ public class LoaderTask implements Runnable {
     private static final String TAG = "LoaderTask";
     public static final String SMARTSPACE_ON_HOME_SCREEN = "pref_smartspace_home_screen";
 
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     @NonNull
     protected final LauncherAppState mApp;
@@ -594,7 +594,7 @@ public class LoaderTask implements Runnable {
                                 si.user, si.getTargetComponent().getPackageName());
                     }
                 } else if (info instanceof LauncherAppWidgetInfo) {
-                    	LauncherAppWidgetInfo lawi = (LauncherAppWidgetInfo) info;
+                    LauncherAppWidgetInfo lawi = (LauncherAppWidgetInfo) info;
                     if (lawi.hasRestoreFlag(LauncherAppWidgetInfo.FLAG_PROVIDER_NOT_READY)) {
                         updateHandler.addPackagesToIgnore(
                                 lawi.user, lawi.providerName.getPackageName());

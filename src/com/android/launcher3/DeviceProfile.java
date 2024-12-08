@@ -71,8 +71,6 @@ import com.android.launcher3.util.IconSizeSteps;
 import com.android.launcher3.util.ResourceHelper;
 import com.android.launcher3.util.WindowBounds;
 
-import android.provider.Settings;
-
 import java.io.PrintWriter;
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -232,7 +230,6 @@ public class DeviceProfile {
     public final int hotseatQsbHeight;
     public final int hotseatQsbVisualHeight;
     private final int hotseatQsbShadowHeight;
-    private final int hotseatQsbMarginTop;
     public int hotseatBorderSpace;
     private final int mMinHotseatIconSpacePx;
     private final int mMinHotseatQsbWidthPx;
@@ -554,7 +551,6 @@ public class DeviceProfile {
         hotseatQsbHeight = res.getDimensionPixelSize(R.dimen.qsb_widget_height);
         hotseatQsbShadowHeight = res.getDimensionPixelSize(R.dimen.qsb_shadow_height);
         hotseatQsbVisualHeight = hotseatQsbHeight - 2 * hotseatQsbShadowHeight;
-        hotseatQsbMarginTop = res.getDimensionPixelSize(R.dimen.hotseat_qsb_margin_top);
 
         // Whether QSB might be inline in appropriate orientation (e.g. landscape).
         boolean showQsb = Utilities.showQSB(context);
@@ -850,7 +846,7 @@ public class DeviceProfile {
                     - iconExtraSpacePx;
         } else {
             int columns = inv.hotseatColumnSpan[mTypeIndex];
-            return getIconToIconWidthForColumns(columns)
+            return getIconToIconWidthForColumns(columns) - iconExtraSpacePx
                     - hotseatBorderSpace;
         }
     }
@@ -1284,8 +1280,7 @@ public class DeviceProfile {
         if (isVerticalLayout && !mIsResponsiveGrid) {
             hideWorkspaceLabelsIfNotEnoughSpace();
         }
-        if ((Flags.enableTwolineToggle()
-                && LauncherPrefs.ENABLE_TWOLINE_ALLAPPS_TOGGLE.get(context))) {
+        if (LauncherPrefs.ENABLE_TWOLINE_ALLAPPS_TOGGLE.get(context)) {
             // Add extra textHeight to the existing allAppsCellHeight.
             allAppsCellHeightPx += Utilities.calculateTextHeight(allAppsIconTextSizePx);
         }
@@ -1448,8 +1443,9 @@ public class DeviceProfile {
                     + allAppsPadding.left + allAppsPadding.right;
             allAppsLeftRightMargin = Math.max(1, (availableWidthPx - usedWidth) / 2);
         } else if (!mIsResponsiveGrid) {
-            int newPadding = 40;
-            allAppsPadding.left = allAppsPadding.right = newPadding;
+            allAppsPadding.left = allAppsPadding.right =
+                    Math.max(0, desiredWorkspaceHorizontalMarginPx + cellLayoutHorizontalPadding
+                            - (allAppsBorderSpacePx.x / 2));
         }
     }
 
@@ -1458,8 +1454,8 @@ public class DeviceProfile {
                 inv.allAppsStyle != INVALID_RESOURCE_HANDLE ? inv.allAppsStyle
                         : R.style.AllAppsStyleDefault, R.styleable.AllAppsStyle);
 
-        int newPadding = 40;
-        allAppsPadding.left = allAppsPadding.right = newPadding;
+        allAppsPadding.left = allAppsPadding.right = allAppsStyle.getDimensionPixelSize(
+                R.styleable.AllAppsStyle_horizontalPadding, 0);
         allAppsStyle.recycle();
     }
 
@@ -1926,7 +1922,7 @@ public class DeviceProfile {
         } else if (isTaskbarPresent) { // QSB on top
             return hotseatBarSizePx - hotseatQsbHeight + hotseatQsbShadowHeight;
         } else {
-            return hotseatBarBottomSpacePx - hotseatQsbShadowHeight - hotseatQsbMarginTop;
+            return hotseatBarBottomSpacePx - hotseatQsbShadowHeight;
         }
     }
 

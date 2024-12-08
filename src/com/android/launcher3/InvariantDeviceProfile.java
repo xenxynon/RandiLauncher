@@ -54,6 +54,7 @@ import com.android.launcher3.config.FeatureFlags;
 import com.android.launcher3.customization.IconDatabase;
 import com.android.launcher3.icons.DotRenderer;
 import com.android.launcher3.logging.FileLog;
+import com.android.launcher3.LauncherAppState;
 import com.android.launcher3.model.DeviceGridState;
 import com.android.launcher3.provider.RestoreDbTask;
 import com.android.launcher3.testing.shared.ResourceUtils;
@@ -64,6 +65,7 @@ import com.android.launcher3.util.MainThreadInitializedObject;
 import com.android.launcher3.util.Partner;
 import com.android.launcher3.util.WindowBounds;
 import com.android.launcher3.util.window.WindowManagerProxy;
+import com.android.launcher3.Utilities;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -99,7 +101,6 @@ public class InvariantDeviceProfile implements OnSharedPreferenceChangeListener 
     public static final String KEY_WORKSPACE_LOCK = "pref_workspace_lock";
     public static final String KEY_ICON_SIZE = "pref_custom_icon_size";
     public static final String KEY_FONT_SIZE = "pref_custom_font_size";
-    public static final String KEY_MAX_LINES = "pref_max_lines";
     public static final String KEY_ALLAPPS_THEMED_ICONS = "pref_allapps_themed_icons";
 
     // Constants that affects the interpolation curve between statically defined device profile
@@ -361,16 +362,23 @@ public class InvariantDeviceProfile implements OnSharedPreferenceChangeListener 
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        if (key.equals(LauncherPrefs.ENABLE_TWOLINE_ALLAPPS_TOGGLE.getKey())) {
+            onConfigChanged(mContext);
+            return;
+        }
         switch (key) {
             case KEY_SHOW_DESKTOP_LABELS:
             case KEY_SHOW_DRAWER_LABELS:
             case KEY_ICON_SIZE:
             case KEY_FONT_SIZE:
-            case KEY_MAX_LINES:
             case DeviceProfile.KEY_ROW_HEIGHT:
             case KEY_ALLAPPS_THEMED_ICONS:
             case IconDatabase.KEY_ICON_PACK:
                 onConfigChanged(mContext);
+                break;
+            case IconDatabase.KEY_THEMED_ICON_PACK:
+            case Utilities.KEY_FORCE_MONOCHROME_ICONS:
+                LauncherAppState.getInstanceNoCreate().setNeedsRestart();
                 break;
         }
     }
@@ -1228,20 +1236,23 @@ public class InvariantDeviceProfile implements OnSharedPreferenceChangeListener 
                     allAppsBorderSpaceTwoPanelLandscape);
             allAppsBorderSpaces[INDEX_TWO_PANEL_LANDSCAPE] = new PointF(x, y);
 
-            iconSizes[INDEX_DEFAULT] =
-                    a.getFloat(R.styleable.ProfileDisplayOption_iconImageSize, 0) * iconSizeModifier;
-            iconSizes[INDEX_LANDSCAPE] =
-                    a.getFloat(R.styleable.ProfileDisplayOption_iconSizeLandscape,
-                            iconSizes[INDEX_DEFAULT]);
-            iconSizes[INDEX_TWO_PANEL_PORTRAIT] =
-                    a.getFloat(R.styleable.ProfileDisplayOption_iconSizeTwoPanelPortrait,
-                            iconSizes[INDEX_DEFAULT]);
-            iconSizes[INDEX_TWO_PANEL_LANDSCAPE] =
-                    a.getFloat(R.styleable.ProfileDisplayOption_iconSizeTwoPanelLandscape,
-                            iconSizes[INDEX_DEFAULT]);
+            float baseIconSize = a.getFloat(R.styleable.ProfileDisplayOption_iconImageSize, 0);
 
-            allAppsIconSizes[INDEX_DEFAULT] = a.getFloat(
-                    R.styleable.ProfileDisplayOption_allAppsIconSize, iconSizes[INDEX_DEFAULT]);
+            iconSizes[INDEX_DEFAULT] = baseIconSize * iconSizeModifier;
+            iconSizes[INDEX_LANDSCAPE] = a.getFloat(
+                    R.styleable.ProfileDisplayOption_iconSizeLandscape,
+                    iconSizes[INDEX_DEFAULT]);
+            iconSizes[INDEX_TWO_PANEL_PORTRAIT] = a.getFloat(
+                    R.styleable.ProfileDisplayOption_iconSizeTwoPanelPortrait,
+                    iconSizes[INDEX_DEFAULT]);
+            iconSizes[INDEX_TWO_PANEL_LANDSCAPE] = a.getFloat(
+                    R.styleable.ProfileDisplayOption_iconSizeTwoPanelLandscape,
+                    iconSizes[INDEX_DEFAULT]);
+
+            float baseAllAppsIconSize = a.getFloat(R.styleable.ProfileDisplayOption_allAppsIconSize, 0);
+
+            allAppsIconSizes[INDEX_DEFAULT] = baseAllAppsIconSize == 0 ? 
+                iconSizes[INDEX_DEFAULT] : baseAllAppsIconSize * iconSizeModifier;
             allAppsIconSizes[INDEX_LANDSCAPE] = a.getFloat(
                     R.styleable.ProfileDisplayOption_allAppsIconSizeLandscape,
                     allAppsIconSizes[INDEX_DEFAULT]);

@@ -54,7 +54,7 @@ import com.android.launcher3.util.SettingsCache;
 
 import com.android.settingslib.collapsingtoolbar.CollapsingToolbarBaseActivity;
 
-import com.android.internal.util.infinity.OmniJawsClient;
+import com.android.internal.util.crdroid.OmniJawsClient;
 
 /**
  * Settings activity for Launcher.
@@ -117,7 +117,6 @@ public class SettingsHomescreen extends CollapsingToolbarBaseActivity
             case Utilities.KEY_HOTSEAT_OPACITY:
             case Utilities.KEY_STATUS_BAR:
             case Utilities.KEY_SHORT_PARALLAX:
-            case Utilities.KEY_FORCE_MONOCHROME_ICONS:            
             case Utilities.KEY_SINGLE_PAGE_CENTER:
             case Utilities.KEY_DOCK_MUSIC_SEARCH:
             case Utilities.DESKTOP_SHOW_QUICKSPACE:
@@ -137,7 +136,7 @@ public class SettingsHomescreen extends CollapsingToolbarBaseActivity
     }
 
     private boolean startPreference(String fragment, Bundle args, String key) {
-        if (Utilities.ATLEAST_P && getSupportFragmentManager().isStateSaved()) {
+        if (getSupportFragmentManager().isStateSaved()) {
             // Sometimes onClick can come after onPause because of being posted on the handler.
             // Skip starting new preferences in that case.
             return false;

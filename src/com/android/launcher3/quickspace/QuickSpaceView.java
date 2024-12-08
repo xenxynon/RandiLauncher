@@ -233,6 +233,9 @@ public class QuickSpaceView extends FrameLayout implements AnimatorUpdateListene
             return;
 
         mAttached = true;
+        if (mController != null && mFinishedInflate) {
+            mController.addListener(this);
+        }
     }
 
     @Override
@@ -282,9 +285,6 @@ public class QuickSpaceView extends FrameLayout implements AnimatorUpdateListene
     }
 
     public void onResume() {
-        if (mController != null && mFinishedInflate) {
-            mController.addListener(this);
-        }
         mController.onResume();
     }
     
